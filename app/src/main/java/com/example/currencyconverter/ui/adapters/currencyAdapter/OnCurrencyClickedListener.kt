@@ -10,4 +10,6 @@ interface OnCurrencyClickedListener {
 
     fun onAmountChanged(currency: CurrencyUiModel, newAmount: Double)
 
+
+
 }

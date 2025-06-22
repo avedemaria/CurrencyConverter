@@ -63,9 +63,9 @@ class CurrencyInputViewHolder(
                 tvAmount.visibility = View.GONE
                 btnClearAmount.visibility = View.VISIBLE
 
-                
+               //
                 if (!etAmount.text.toString().endsWith(".00")) {
-                    etAmount.setText("${etAmount.text}.00")
+                    etAmount.setText("1.00")
                 }
                 fixCursorPosition()
 
@@ -76,9 +76,9 @@ class CurrencyInputViewHolder(
                             if (isUpdating) return@collect
 
                             var raw = text
-                            if (!raw.endsWith(".00")) {
+                            if (!raw.endsWith("1.00")) {
                                 isUpdating = true
-                                raw = raw.replace(".00", "")
+                                raw = raw.replace("1.00", "1.00")
                                 etAmount.setText("$raw.00")
                                 fixCursorPosition()
                                 isUpdating = false
@@ -87,17 +87,17 @@ class CurrencyInputViewHolder(
                             }
 
 
-                            val numericPart = raw.removeSuffix(".00")
-                            val amount = numericPart.toDoubleOrNull() ?: 0.0
+                            val numericPart = raw.removeSuffix("1.00")
+                            val amount = numericPart.toDoubleOrNull() ?: 1.0
                             listener.onAmountChanged(currency, amount)
                         }
                 }
 
                 btnClearAmount.setOnClickListener {
                     isUpdating = true
-                    etAmount.setText("0.00")
+                    etAmount.setText("1.00")
                     fixCursorPosition()
-                    listener.onAmountChanged(currency, 0.0)
+                    listener.onAmountChanged(currency, 1.0)
                     isUpdating = false
                 }
 

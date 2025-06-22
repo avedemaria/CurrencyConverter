@@ -82,7 +82,6 @@ class CurrencyListFragment : Fragment() {
                 override fun onCurrencyClicked(currency: CurrencyUiModel) {
                     Log.d(TAG, "on currency clicked")
                     viewModel.selectCurrency(currency.currencyCode)
-                    binding.rvCurrencies.smoothScrollToPosition(0)
                 }
 
                 override fun onAmountClicked(currency: CurrencyUiModel) {
@@ -97,6 +96,14 @@ class CurrencyListFragment : Fragment() {
             screenMode = CurrencyScreenMode.LIST_MODE
         )
 
+        val observer = object : RecyclerView.AdapterDataObserver() {
+            override fun onChanged() {
+                Log.d(TAG, "on changed")
+                binding.rvCurrencies.scrollToPosition(0)
+                currenciesAdapter.unregisterAdapterDataObserver(this)
+            }
+        }
+        currenciesAdapter.registerAdapterDataObserver(observer)
 
         binding.rvCurrencies.apply {
             layoutManager = LinearLayoutManager(
@@ -104,9 +111,12 @@ class CurrencyListFragment : Fragment() {
                 false
             )
             adapter = currenciesAdapter
+
             setHasFixedSize(true)
             itemAnimator = DefaultItemAnimator()
         }
+
+
     }
 
 

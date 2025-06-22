@@ -92,7 +92,6 @@ class ExchangeFragment : Fragment() {
                 viewModel.exchangeState.collect { state ->
                     when (state) {
                         is ExchangeState.Error -> {
-                            Log.d(TAG, "error")
                             binding.progressBar.visibility = View.VISIBLE
                             binding.content.visibility = View.GONE
                         }
@@ -166,7 +165,6 @@ class ExchangeFragment : Fragment() {
         binding.tvSellCode.text = sellCurrency.currencyCode
         binding.tvSellName.text = sellCurrency.currencyName
 
-        Log.d("ExchangeDebug", "tvSellAmount text = '${binding.tvSellAmount.text}', tvBuyAmount text = '${binding.tvBuyAmount.text}'")
         binding.tvSellAmount.text = "-${sellCurrency.symbol}${sellCurrency.amount}"
 
 

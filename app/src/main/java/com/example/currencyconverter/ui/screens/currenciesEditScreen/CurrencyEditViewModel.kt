@@ -37,7 +37,8 @@ class CurrencyEditViewModel @Inject constructor(
     private val _uiEvent = MutableSharedFlow<UiEditEvent>()
     val uiEvent: SharedFlow<UiEditEvent> get() = _uiEvent.asSharedFlow()
 
-    private var lastEnteredAmount: Double = 1.0
+    private val _lastEnteredAmount = MutableStateFlow(1.0)
+    val lastEnteredAmount = _lastEnteredAmount.asStateFlow()
 
 
     private var selectedCurrency: CurrencyUiModel =
@@ -53,11 +54,14 @@ class CurrencyEditViewModel @Inject constructor(
 
 
     private suspend fun loadInitialData() {
+        Log.d(TAG, "load initial data")
         val accounts = accountUseCase.getAccountsFromRoom().first()
         refreshRatesAndFilter(1.0, accounts)
     }
 
     private fun refreshRatesAndFilter(amount: Double, accounts: List<Account>) {
+
+        Log.d(TAG, "refresh rates and filter")
 
         viewModelScope.launch {
             runCatching {
@@ -87,21 +91,23 @@ class CurrencyEditViewModel @Inject constructor(
 
             }.onFailure { error ->
                 _currencyEditState.value = CurrencyEditState.Error
-                _uiEvent.emit(UiEditEvent.ShowSnackbar(error.message ?: "Ошибка загрузки курсов"))
+                _uiEvent.emit(UiEditEvent.ShowSnackbar(error.message ?: "Error while downloading rates"))
             }
         }
     }
 
 
-    fun getEnteredAmount(): Double = lastEnteredAmount
-
     fun updateAmount(newAmount: Double) {
-        val currentState = _currencyEditState.value
-        if (currentState is CurrencyEditState.Success) {
-            lastEnteredAmount = newAmount
-            viewModelScope.launch {
+        viewModelScope.launch {
+            Log.d(TAG, "update amount")
+            val currentState = _currencyEditState.value
+            if (currentState is CurrencyEditState.Success) {
+                _lastEnteredAmount.emit(newAmount)
+                Log.d(TAG, "update amount last entered amount: $lastEnteredAmount")
+
                 val accounts = currentState.accounts
                 refreshRatesAndFilter(newAmount, accounts)
+
             }
         }
     }
@@ -110,6 +116,7 @@ class CurrencyEditViewModel @Inject constructor(
     fun getUpdatedCurrenciesForExchange(
         selectedTo: CurrencyUiModel,
     ): Pair<CurrencyUiModel, CurrencyUiModel>? {
+        Log.d(TAG, "get updated currencies for exchange")
         val currentState = _currencyEditState.value
         if (currentState is CurrencyEditState.Success) {
             val source =
@@ -132,12 +139,12 @@ class CurrencyEditViewModel @Inject constructor(
     }
 
 
-    fun setSelectedCurrency(newCurrency: CurrencyUiModel) {
-        if (newCurrency.currencyCode != selectedCurrency.currencyCode) {
-            selectedCurrency = newCurrency
-            updateAmount(lastEnteredAmount)
-        }
-    }
+//    fun setSelectedCurrency(newCurrency: CurrencyUiModel) {
+//        if (newCurrency.currencyCode != selectedCurrency.currencyCode) {
+//            selectedCurrency = newCurrency
+//            updateAmount(lastEnteredAmount)
+//        }
+//    }
 
 
     private fun filterAvailableCurrencies(
@@ -147,7 +154,7 @@ class CurrencyEditViewModel @Inject constructor(
         accounts: List<Account>,
     ): List<CurrencyUiModel> {
 
-
+        Log.d(TAG, "filter available currencies")
         return currencies.filter { currency ->
             if (currency.currencyCode == selectedCurrencyCode) {
                 true
@@ -155,12 +162,10 @@ class CurrencyEditViewModel @Inject constructor(
                 val account = accounts.find { it.code.name == currency.currencyCode }
                     ?: return@filter false
 
-
-
                 val requiredAmount = calculateRequiredAmount(enteredAmount, selectedCurrency)
-                Log.d("FilterDebug", "selected currency $selectedCurrency" )
+                Log.d(TAG, "selected currency $selectedCurrency" )
                 Log.d(
-                    "FilterDebug",
+                    TAG,
                     "Currency=${currency.currencyCode}, balance=${account.balance}, required=$requiredAmount"
                 )
 
@@ -178,4 +183,8 @@ class CurrencyEditViewModel @Inject constructor(
     }
 
 
+
+   companion object {
+        private const val TAG = "CurrencyEditViewModel"
+    }
 }

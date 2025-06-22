@@ -43,7 +43,6 @@ class ExchangeViewModel @Inject constructor(
             _exchangeState.value = ExchangeState.Loading
             try {
                 val rates = getRatesUseCase.invoke(baseCurrencyCode, amount)
-                Log.d("ExchangeViewModel", "rates: $rates")
 
                 val result = ExchangeRateUtils.calculateExchangeRate(rates, baseCurrencyCode, targetCurrencyCode)
                 _exchangeState.value = ExchangeState.Success(result)
