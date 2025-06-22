@@ -74,7 +74,7 @@ class CurrencyEditViewModel @Inject constructor(
                     )
                 }
 
-                val filtered = filterAvailableCurrencies(
+                val filtered = filterCurrenciesByBalance(
                     currencyUiList,
                     amount,
                     selectedCurrency.currencyCode,
@@ -147,14 +147,18 @@ class CurrencyEditViewModel @Inject constructor(
 //    }
 
 
-    private fun filterAvailableCurrencies(
+    private fun filterCurrenciesByBalance(
         currencies: List<CurrencyUiModel>,
         enteredAmount: Double,
         selectedCurrencyCode: String,
         accounts: List<Account>,
     ): List<CurrencyUiModel> {
 
+        val selectedCurrency = currencies.find { it.currencyCode == selectedCurrencyCode }
+            ?: return emptyList()
+
         Log.d(TAG, "filter available currencies")
+
         return currencies.filter { currency ->
             if (currency.currencyCode == selectedCurrencyCode) {
                 true
@@ -162,24 +166,13 @@ class CurrencyEditViewModel @Inject constructor(
                 val account = accounts.find { it.code.name == currency.currencyCode }
                     ?: return@filter false
 
-                val requiredAmount = calculateRequiredAmount(enteredAmount, selectedCurrency)
-                Log.d(TAG, "selected currency $selectedCurrency" )
-                Log.d(
-                    TAG,
-                    "Currency=${currency.currencyCode}, balance=${account.balance}, required=$requiredAmount"
-                )
+              val  requiredAmount = enteredAmount * currency.rateValue / selectedCurrency.rateValue
+
+                Log.d(TAG, "selectedCurrency=$selectedCurrencyCode, currency=${currency.currencyCode}, balance=${account.balance}, required=$requiredAmount")
 
                 account.balance >= requiredAmount
             }
         }
-    }
-
-    private fun calculateRequiredAmount(
-        enteredAmount: Double,
-        sourceCurrency:CurrencyUiModel,
-    ): Double {
-
-       return enteredAmount / sourceCurrency.rateValue
     }
 
 
