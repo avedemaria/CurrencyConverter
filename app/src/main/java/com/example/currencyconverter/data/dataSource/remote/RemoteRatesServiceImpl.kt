@@ -1,5 +1,6 @@
 package com.example.currencyconverter.data.dataSource.remote
 
+import android.util.Log
 import com.example.currencyconverter.data.dataSource.remote.dto.RateDto
 import kotlinx.coroutines.delay
 import javax.inject.Inject

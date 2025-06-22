@@ -4,8 +4,9 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.currencyconverter.domain.entity.Account
+import com.example.currencyconverter.domain.entity.Account import com.example.currencyconverter.domain.entity.CurrencyItem
 import com.example.currencyconverter.domain.usecases.AccountUseCase
+import com.example.currencyconverter.domain.usecases.GetCurrenciesUseCase
 import com.example.currencyconverter.domain.usecases.GetRatesUseCase
 import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.mapper.CurrencyUiMapper
@@ -26,6 +27,7 @@ import javax.inject.Inject
 @HiltViewModel
 class CurrencyEditViewModel @Inject constructor(
     private val getRatesUseCase: GetRatesUseCase,
+    private val getCurrenciesUseCase: GetCurrenciesUseCase,
     private val accountUseCase: AccountUseCase,
     private val uiMapper: CurrencyUiMapper,
     savedStateHandle: SavedStateHandle,
@@ -56,16 +58,18 @@ class CurrencyEditViewModel @Inject constructor(
     private suspend fun loadInitialData() {
         Log.d(TAG, "load initial data")
         val accounts = accountUseCase.getAccountsFromRoom().first()
-        refreshRatesAndFilter(1.0, accounts)
+        refreshCurrenciesAndFilter(1.0, accounts)
     }
 
-    private fun refreshRatesAndFilter(amount: Double, accounts: List<Account>) {
+    private fun refreshCurrenciesAndFilter(amount: Double, accounts: List<Account>,) {
 
         Log.d(TAG, "refresh rates and filter")
 
         viewModelScope.launch {
             runCatching {
-                getRatesUseCase(selectedCurrency.currencyCode, amount)
+                Log.d(TAG, "selected code ${selectedCurrency.currencyCode} rate value ${selectedCurrency.rateValue}")
+                getRatesUseCase(selectedCurrency.currencyCode, INITIAL_RATE_VALUE)
+
             }.onSuccess { currencyList ->
                 val currencyUiList = currencyList.map {
                     uiMapper.currencyEntityToCurrencyUi(
@@ -91,7 +95,11 @@ class CurrencyEditViewModel @Inject constructor(
 
             }.onFailure { error ->
                 _currencyEditState.value = CurrencyEditState.Error
-                _uiEvent.emit(UiEditEvent.ShowSnackbar(error.message ?: "Error while downloading rates"))
+                _uiEvent.emit(
+                    UiEditEvent.ShowSnackbar(
+                        error.message ?: "Error while downloading rates"
+                    )
+                )
             }
         }
     }
@@ -99,14 +107,13 @@ class CurrencyEditViewModel @Inject constructor(
 
     fun updateAmount(newAmount: Double) {
         viewModelScope.launch {
-            Log.d(TAG, "update amount")
             val currentState = _currencyEditState.value
             if (currentState is CurrencyEditState.Success) {
                 _lastEnteredAmount.emit(newAmount)
-                Log.d(TAG, "update amount last entered amount: $lastEnteredAmount")
+                Log.d(TAG, "update amount last entered amount: ${lastEnteredAmount.value}")
 
                 val accounts = currentState.accounts
-                refreshRatesAndFilter(newAmount, accounts)
+                refreshCurrenciesAndFilter(newAmount, accounts)
 
             }
         }
@@ -134,18 +141,6 @@ class CurrencyEditViewModel @Inject constructor(
         return null
     }
 
-    fun resetAmount() {
-        updateAmount(1.0)
-    }
-
-
-//    fun setSelectedCurrency(newCurrency: CurrencyUiModel) {
-//        if (newCurrency.currencyCode != selectedCurrency.currencyCode) {
-//            selectedCurrency = newCurrency
-//            updateAmount(lastEnteredAmount)
-//        }
-//    }
-
 
     private fun filterCurrenciesByBalance(
         currencies: List<CurrencyUiModel>,
@@ -154,10 +149,8 @@ class CurrencyEditViewModel @Inject constructor(
         accounts: List<Account>,
     ): List<CurrencyUiModel> {
 
-        val selectedCurrency = currencies.find { it.currencyCode == selectedCurrencyCode }
-            ?: return emptyList()
-
         Log.d(TAG, "filter available currencies")
+
 
         return currencies.filter { currency ->
             if (currency.currencyCode == selectedCurrencyCode) {
@@ -166,9 +159,13 @@ class CurrencyEditViewModel @Inject constructor(
                 val account = accounts.find { it.code.name == currency.currencyCode }
                     ?: return@filter false
 
-              val  requiredAmount = enteredAmount * currency.rateValue / selectedCurrency.rateValue
+                val requiredAmount = enteredAmount * currency.rateValue / selectedCurrency.rateValue
 
-                Log.d(TAG, "selectedCurrency=$selectedCurrencyCode, currency=${currency.currencyCode}, balance=${account.balance}, required=$requiredAmount")
+                Log.d(
+                    TAG,
+                    "selectedCurrency=$selectedCurrencyCode, currency=${currency.currencyCode}," +
+                            " balance=${account.balance}, required=$requiredAmount"
+                )
 
                 account.balance >= requiredAmount
             }
@@ -176,8 +173,8 @@ class CurrencyEditViewModel @Inject constructor(
     }
 
 
-
-   companion object {
+    companion object {
+        private const val INITIAL_RATE_VALUE = 1.0
         private const val TAG = "CurrencyEditViewModel"
     }
 }

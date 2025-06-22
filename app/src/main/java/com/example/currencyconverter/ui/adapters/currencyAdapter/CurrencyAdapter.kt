@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.currencyconverter.databinding.CurrencyItemBinding
 import com.example.currencyconverter.databinding.CurrencyItemInputModeBinding
 import com.example.currencyconverter.ui.CurrencyUiModel
-import com.example.currencyconverter.ui.screens.currenciesScreen.CurrencyScreenMode
+import com.example.currencyconverter.ui.screens.CurrencyScreenMode
 
 class CurrencyAdapter(
     private val listener: OnCurrencyClickedListener,
@@ -77,24 +77,57 @@ class CurrencyAdapter(
         if (payloads.isEmpty()) {
             onBindViewHolder(holder, position)
         } else {
+            val item = getItem(position)
+
             when (holder) {
                 is CurrencyItemViewHolder -> {
                     for (payload in payloads) {
                         when (payload) {
-                            is CurrencyChangePayLoad.RateAmount -> holder.bindRateAmount(payload.newAmount, payload.symbol)
+                            is CurrencyChangePayLoad.RateValue -> holder.bindRateAmount(payload.newAmount, payload.symbol)
                             is CurrencyChangePayLoad.Balance -> holder.bindBalance(payload.newBalance, payload.symbol)
                             is CurrencyChangePayLoad.IsSelected -> holder.bindIsSelected(payload.isSelected)
-                            else -> holder.bind(getItem(position))
+                            else -> holder.bind(item)
                         }
                     }
                 }
-                is CurrencyInputViewHolder -> {
 
-                    holder.bind(getItem(position), getItem(position).isSelected)
+                is CurrencyInputViewHolder -> {
+                    for (payload in payloads) {
+                        when (payload) {
+                            is CurrencyChangePayLoad.EnteredAmount -> holder.bindAmount(payload.enteredAmount)
+                            else -> holder.bind(item, item.isSelected)
+                        }
+                    }
                 }
             }
         }
     }
+
+//
+//    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int, payloads: MutableList<Any>) {
+//        if (payloads.isEmpty()) {
+//            onBindViewHolder(holder, position)
+//        } else {
+//            when (holder) {
+//                is CurrencyItemViewHolder -> {
+//                    for (payload in payloads) {
+//                        when (payload) {
+//                            is CurrencyChangePayLoad.RateValue -> holder.bindRateAmount(payload.newAmount, payload.symbol)
+//                            is CurrencyChangePayLoad.EnteredAmount -> {}
+//                            is CurrencyChangePayLoad.Balance -> holder.bindBalance(payload.newBalance, payload.symbol)
+//                            is CurrencyChangePayLoad.IsSelected -> holder.bindIsSelected(payload.isSelected)
+//                            else -> holder.bind(getItem(position))
+//                        }
+//                    }
+//                }
+//                is CurrencyInputViewHolder -> {
+//
+//
+//                    holder.bind(getItem(position), getItem(position).isSelected)
+//                }
+//            }
+//        }
+//    }
 
 
     companion object {

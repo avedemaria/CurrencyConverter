@@ -12,8 +12,8 @@ class CurrencyUiMapper @Inject constructor(
     fun currencyEntityToCurrencyUi(
         currencyItem: CurrencyItem,
         isSelected: Boolean,
-    ): CurrencyUiModel =
-        CurrencyUiModel(
+    ): CurrencyUiModel {
+       return CurrencyUiModel(
             currencyCode = currencyItem.code.name,
             currencyName = currencyItem.name,
             symbol = currencyItem.symbol,
@@ -23,4 +23,10 @@ class CurrencyUiMapper @Inject constructor(
             amount = 0.0,
             rateValue = currencyItem.rateValue
         )
+
+    }
+
+
+
+
 }

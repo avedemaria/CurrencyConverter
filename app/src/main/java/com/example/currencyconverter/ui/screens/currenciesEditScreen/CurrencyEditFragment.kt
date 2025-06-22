@@ -19,7 +19,7 @@ import com.example.currencyconverter.databinding.FragmentCurrencyEditBinding
 import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.adapters.currencyAdapter.CurrencyAdapter
 import com.example.currencyconverter.ui.adapters.currencyAdapter.OnCurrencyClickedListener
-import com.example.currencyconverter.ui.screens.currenciesScreen.CurrencyScreenMode
+import com.example.currencyconverter.ui.screens.CurrencyScreenMode
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -70,6 +70,7 @@ class CurrencyEditFragment : Fragment() {
             object : OnCurrencyClickedListener {
                 override fun onCurrencyClicked(currency: CurrencyUiModel) {
                     viewModel.getUpdatedCurrenciesForExchange(currency)?.let { (from, to) ->
+                        Log.d(TAG, " on currency clicked $from $to")
                         launchExchangeFragment(from, to)
                     }
                 }

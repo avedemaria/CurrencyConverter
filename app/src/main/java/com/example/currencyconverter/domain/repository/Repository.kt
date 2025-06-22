@@ -12,6 +12,8 @@ interface Repository {
         amount: Double,
     ): List<CurrencyItem>
 
+    suspend fun getAvailableCurrencies (baseCurrencyCode: String): List<CurrencyItem>
+
     suspend fun ensureCurrencyInfoLoaded()
 
 

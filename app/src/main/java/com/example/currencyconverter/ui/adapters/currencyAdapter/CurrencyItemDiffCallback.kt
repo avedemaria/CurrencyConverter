@@ -16,12 +16,17 @@ class CurrencyItemDiffCallback : DiffUtil.ItemCallback<CurrencyUiModel>() {
     override fun getChangePayload(oldItem: CurrencyUiModel, newItem: CurrencyUiModel): Any? {
 
         return when {
+            oldItem.amount != newItem.amount -> {
+                CurrencyChangePayLoad.EnteredAmount(newItem.amount)
+            }
+
+
             oldItem.rateValue != newItem.rateValue -> {
-                CurrencyChangePayLoad.RateAmount(newItem.rateValue, newItem.symbol)
+                CurrencyChangePayLoad.RateValue(newItem.rateValue, newItem.symbol)
             }
 
             oldItem.balance != newItem.balance -> {
-                CurrencyChangePayLoad.Balance(newItem.balance ?: 0.0, newItem.symbol)
+                CurrencyChangePayLoad.Balance(newItem.balance, newItem.symbol)
             }
 
             oldItem.isSelected != newItem.isSelected -> {

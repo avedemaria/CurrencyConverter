@@ -8,13 +8,12 @@ import com.example.currencyconverter.domain.entity.CurrencyItem
 import com.example.currencyconverter.domain.usecases.AccountUseCase
 import com.example.currencyconverter.domain.usecases.CurrencyInfoUseCase
 import com.example.currencyconverter.domain.usecases.GetRatesUseCase
-import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.mapper.CurrencyUiMapper
+import com.example.currencyconverter.ui.screens.CurrencyScreenMode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -57,20 +56,19 @@ class CurrencyListViewModel @Inject constructor(
             _currencyListState.value = CurrencyListState.Loading
 
             currencyInfoUseCase()
-            Log.d("ViewModel", "Currency info loaded")
 
-            val ratesDeferred = async { getRatesUseCase(INITIAL_CURRENCY_CODE, INITIAL_AMOUNT) }
+            val ratesDeferred = async { getRatesUseCase(INITIAL_CURRENCY_CODE, INITIAL_RATE_VALUE) }
             val accountsDeferred = async { accountUseCase.getAccountsFromRoom().first() }
 
             val ratesResult = runCatching { ratesDeferred.await() }
             val accounts = accountsDeferred.await()
-            Log.d("ViewModel", "Accounts loaded: ${accounts.size}")
+
 
             ratesResult.onSuccess { currencies ->
                 buildSuccessState(
                     currencies = currencies,
                     code = INITIAL_CURRENCY_CODE,
-                    amount = INITIAL_AMOUNT,
+                    rateValue = INITIAL_RATE_VALUE,
                     accounts = accounts
                 )
             }.onFailure { error ->
@@ -84,7 +82,7 @@ class CurrencyListViewModel @Inject constructor(
     fun startAutoRefresh() {
         if (autoRefreshJob?.isActive == true) return
 
-        Log.d("ViewModel", "startAutoRefresh called")
+        Log.d(TAG, "startAutoRefresh called")
 
         autoRefreshJob = viewModelScope.launch {
             rates.debounce(1000)
@@ -92,35 +90,13 @@ class CurrencyListViewModel @Inject constructor(
                     val currentState = _currencyListState.value
                     if (currentState is CurrencyListState.Success) {
                         val code = currentState.selectedCurrencyCode
-                        val amount = currentState.enteredAmount
-                        getRates(code, amount)
+                        val rateValue = currentState.rateValue
+                        Log.d(TAG, "code $code  rate value $rateValue")
+                        getRates(code, rateValue)
                     }
                 }
         }
     }
-
-
-//
-//    private fun filterCurrenciesByMode(currencies: List<CurrencyUiModel>): List<CurrencyUiModel> {
-//        val currentState = _currencyListState.value
-//        if (currentState !is CurrencyListState.Success) return currencies
-//
-//        return when (currentState.screenMode) {
-//            CurrencyScreenMode.LIST_MODE -> currencies
-//            CurrencyScreenMode.INPUT_MODE -> {
-//                currencies.filter { currency ->
-//                    val balanceAvailable = currency.balance ?: 0.0
-//                    val neededAmount = calculateNeededAmount(currency, currentState.enteredAmount)
-//                    balanceAvailable >= neededAmount
-//                }
-//            }
-//        }
-//    }
-//
-//
-//    private fun calculateNeededAmount(currency: CurrencyUiModel, enteredAmount: Double): Double {
-//        return enteredAmount * currency.amount
-//    }
 
 
     private suspend fun getRates(
@@ -133,7 +109,7 @@ class CurrencyListViewModel @Inject constructor(
             if (currencies.isNotEmpty()) {
                 buildSuccessState(currencies, code, amount)
             } else {
-                Log.w("ViewModel", "Received empty rates list")
+                Log.w(TAG, "Received empty rates list")
             }
         }.onFailure { error ->
             _currencyListState.value = CurrencyListState.Error
@@ -144,36 +120,35 @@ class CurrencyListViewModel @Inject constructor(
     private suspend fun buildSuccessState(
         currencies: List<CurrencyItem>,
         code: String,
-        amount: Double,
+        rateValue: Double,
         accounts: List<Account> = (_currencyListState.value
                 as? CurrencyListState.Success)?.accounts.orEmpty(),
     ) {
         _rates.emit(currencies)
 
-        Log.d("ViewModel", "Currencies before mapping: ${currencies.size}")
+
         val uiCurrencies = currencies.map { currency ->
             uiMapper.currencyEntityToCurrencyUi(
                 currency,
                 isSelected = currency.code.name == code
             )
         }.sortedByDescending { it.isSelected }
-        Log.d("ViewModel", "Currencies after mapping: ${uiCurrencies.size}")
 
         _currencyListState.value = CurrencyListState.Success(
             currencies = uiCurrencies,
             selectedCurrencyCode = code,
-            enteredAmount = amount,
+            rateValue = rateValue,
             screenMode = CurrencyScreenMode.LIST_MODE,
             accounts = accounts
         )
     }
 
     fun selectCurrency(code: String) {
-        Log.d("ViewModel", "select currency")
+        Log.d(TAG, "select currency")
         val currentState = _currencyListState.value
         if (currentState is CurrencyListState.Success) {
             _currencyListState.value = currentState.copy(selectedCurrencyCode = code)
-            Log.d("ViewModel", "selected code: $code")
+            Log.d(TAG, "selected code: $code")
         }
     }
 
@@ -183,8 +158,11 @@ class CurrencyListViewModel @Inject constructor(
     }
 
 
+
+
     companion object {
-        private const val INITIAL_AMOUNT = 1.0
+        private const val TAG = "CurrencyListViewModel"
+        private const val INITIAL_RATE_VALUE = 1.0
         private const val INITIAL_CURRENCY_CODE = "USD"
     }
 }

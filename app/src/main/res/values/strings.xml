@@ -108,4 +108,5 @@
     <string name="no_available_transactions">No available transactions</string>
     <string name="try_again">Try Again</string>
     <string name="something_went_wrong">Something went wrong</string>
+    <string name="balance_is_too_low">Your balance is too low</string>
 </resources>

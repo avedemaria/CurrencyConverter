@@ -15,10 +15,12 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.currencyconverter.R
 import com.example.currencyconverter.databinding.FragmentCurrencyListBinding
 import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.adapters.currencyAdapter.CurrencyAdapter
 import com.example.currencyconverter.ui.adapters.currencyAdapter.OnCurrencyClickedListener
+import com.example.currencyconverter.ui.screens.CurrencyScreenMode
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -85,8 +87,13 @@ class CurrencyListFragment : Fragment() {
                 }
 
                 override fun onAmountClicked(currency: CurrencyUiModel) {
-                    Log.d(TAG, "selected amount ${currency.amount}")
-                    launchEditMode(currency)
+                    Log.d(TAG, "selected rate ${currency.rateValue}")
+                    if (currency.balance<=0) {
+                        showSnackbar(getString(R.string.balance_is_too_low))
+                        return
+                    } else {
+                        launchEditMode(currency)
+                    }
                 }
 
                 override fun onAmountChanged(currency: CurrencyUiModel, newAmount: Double) {

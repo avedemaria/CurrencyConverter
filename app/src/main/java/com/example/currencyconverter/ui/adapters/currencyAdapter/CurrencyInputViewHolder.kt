@@ -13,7 +13,6 @@ import com.example.currencyconverter.R
 import com.example.currencyconverter.databinding.CurrencyItemInputModeBinding
 import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.screens.currenciesScreen.CurrencyListViewModel
-import com.example.currencyconverter.utils.InputUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -119,6 +118,16 @@ class CurrencyInputViewHolder(
 
         }
 
+
+    fun bindAmount(newAmount: Double) {
+        binding.tvAmount.text = String.format("%.2f", newAmount)
+        if (binding.etAmount.visibility == View.VISIBLE) {
+            isUpdating = true
+            binding.etAmount.setText(String.format("%.2f", newAmount))
+            fixCursorPosition()
+            isUpdating = false
+        }
+    }
 
 
     private fun fixCursorPosition() {
