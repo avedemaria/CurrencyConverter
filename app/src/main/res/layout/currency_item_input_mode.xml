@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    app:cardCornerRadius="8dp"
+    app:cardUseCompatPadding="true"
+    >
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:background="@color/currency_background"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="12dp"
+        >
+        <ImageView
+            android:id="@+id/iv_flag"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:contentDescription="@string/flag_of_country"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:src="@drawable/usd_static" />
+
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginStart="12dp"
+            app:layout_constraintStart_toEndOf="@id/iv_flag"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <TextView
+                android:id="@+id/tv_code"
+                android:fontFamily="@font/lato_regular"
+                android:textColor="@color/dark_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textStyle="bold"
+                tools:text="USD"/>
+
+            <TextView
+                android:id="@+id/tv_currencyName"
+                android:textColor="@color/dark_blue"
+                android:fontFamily="@font/lato_regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="US dollar"/>
+
+
+            <TextView
+                android:id="@+id/tv_balance"
+                android:fontFamily="@font/lato_regular"
+                android:textColor="@color/dark_blue"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                tools:text="Balance: $ 1314"/>
+
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/tv_amount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:textColor="@color/dark_blue"
+            android:textSize="18sp"
+            android:fontFamily="@font/lato_regular"
+            android:layout_marginEnd="8dp"
+            tools:text="$ 1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+
+
+        <EditText
+            android:id="@+id/etAmount"
+            android:layout_width="100dp"
+            android:layout_height="wrap_content"
+            tools:text="1.0"
+            android:inputType="numberDecimal"
+            android:digits="0123456789."
+            android:maxLength="9"
+            android:singleLine="true"
+            android:scrollHorizontally="true"
+            android:ellipsize="none"
+            android:fontFamily="@font/lato_regular"
+            android:gravity="end"
+            android:maxLines="1"
+            android:textSize="18sp"
+            android:imeOptions="actionDone"
+            android:visibility="gone"
+            app:layout_constraintEnd_toStartOf="@id/btnClearAmount"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="8dp"/>
+
+
+        <ImageButton
+            android:id="@+id/btnClearAmount"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:visibility="gone"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>
+

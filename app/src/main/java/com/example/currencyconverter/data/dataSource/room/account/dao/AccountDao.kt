@@ -1,6 +1,7 @@
 package com.example.currencyconverter.data.dataSource.room.account.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -17,4 +18,6 @@ interface AccountDao {
 
     @Query("SELECT * FROM accounts")
     fun getAllAsFlow(): Flow<List<AccountDbo>>
+
+
 }

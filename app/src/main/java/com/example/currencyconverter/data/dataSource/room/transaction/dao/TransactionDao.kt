@@ -3,6 +3,7 @@ package com.example.currencyconverter.data.dataSource.room.transaction.dao
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
+import androidx.room.Transaction
 import com.example.currencyconverter.data.dataSource.room.transaction.dbo.TransactionDbo
 
 @Dao
@@ -12,4 +13,5 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions")
     suspend fun getAll(): List<TransactionDbo>
+
 }

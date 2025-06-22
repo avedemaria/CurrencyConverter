@@ -1,3 +1,3 @@
 package com.example.currencyconverter.data.dataSource.remote.dto
 
-data class RateDto(val currency: String, val value: Double)
+data class RateDto(val code: String, val value: Double)

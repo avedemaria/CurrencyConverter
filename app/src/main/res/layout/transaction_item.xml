@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingHorizontal="16dp"
+    android:paddingVertical="10dp">
+
+
+    <TextView
+        android:id="@+id/tv_currency_pair"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/lato_bold"
+        android:textColor="@android:color/black"
+        android:textSize="16sp"
+        tools:text="USD → EUR" />
+
+
+    <TextView
+        android:id="@+id/tv_amounts"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/lato_regular"
+        android:textColor="@color/medium_grey"
+        android:textSize="14sp"
+        tools:text="-100.00 USD / +91.50 EUR" />
+
+
+    <TextView
+        android:id="@+id/tv_date_time"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/lato_regular"
+        android:textColor="@color/medium_grey"
+        android:textSize="12sp"
+        tools:text="21.06.2025 18:55" />
+
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="0.5dp"
+        android:layout_marginTop="12dp"
+        android:alpha="0.3"
+        android:background="@android:color/darker_gray" />
+</LinearLayout>

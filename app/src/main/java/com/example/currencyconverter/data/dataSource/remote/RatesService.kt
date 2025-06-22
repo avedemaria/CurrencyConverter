@@ -8,3 +8,4 @@ interface RatesService {
         amount: Double
     ): List<RateDto>
 }
+

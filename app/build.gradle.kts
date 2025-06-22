@@ -1,10 +1,13 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
     id("kotlin-kapt")
     id("androidx.room")
+    id("kotlin-parcelize")
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.androidx.navigation.safeargs)
@@ -25,7 +28,15 @@ android {
     }
 
     buildTypes {
+
+        debug {
+            buildConfigField("String", "CURRENCY_API_URL", "\"${getCurrencyUrl()}\"")
+            buildConfigField("String", "CURRENCY_API_KEY", "\"${getCurrencyKey()}\"")
+        }
+
         release {
+            buildConfigField("String", "CURRENCY_API_URL", "\"${getCurrencyUrl()}\"")
+            buildConfigField("String", "CURRENCY_API_KEY", "\"${getCurrencyKey()}\"")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -41,8 +52,8 @@ android {
         jvmTarget = "11"
     }
     buildFeatures {
-        compose = true
         viewBinding = true
+        buildConfig = true
     }
     room {
         schemaDirectory("$projectDir/schemas")
@@ -77,9 +88,13 @@ dependencies {
     implementation(libs.xmlutil.core)
     implementation(libs.xmlutil.serialization)
 
-    // retrofit
+    // network
     implementation(libs.retrofit2)
     implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.logging.interceptor)
+    implementation(libs.converter.moshi)
+    implementation(libs.moshi)
+    implementation(libs.moshi.kotlin)
 
     // coil
     implementation(libs.coil)
@@ -114,4 +129,26 @@ dependencies {
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.6.0")
+
+
+}
+
+fun getProperties(): Properties {
+    val properties = Properties()
+    val localPropertiesFile = rootProject.file("local.properties")
+    if (localPropertiesFile.exists()) {
+        properties.load(FileInputStream(localPropertiesFile))
+        return properties
+    } else {
+        throw GradleException("local.properties not found!")
+    }
+}
+
+fun getCurrencyUrl(): String {
+    return getProperties().getProperty("CURRENCY_API_URL")
+}
+
+fun getCurrencyKey(): String {
+    return getProperties().getProperty("CURRENCY_API_KEY")
+
 }

@@ -1,0 +1,190 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:indeterminate="true"
+        app:indicatorColor="@color/light_blue"/>
+
+
+
+    <LinearLayout
+        android:id = "@id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:fontFamily="@font/lato_regular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            tools:text="Russia Rouble to Euro" />
+
+        <TextView
+            android:id="@+id/tvExchangeRate"
+            android:fontFamily="@font/lato_regular"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="12sp"
+            android:textColor="@color/black"
+            tools:text="$1 = руб. 89" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutBuyCurrency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:background="@color/light_blue"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/ivBuyFlag"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                tools:src="@drawable/eur_static" />
+
+            <TextView
+                android:id="@+id/tvBuyCode"
+                android:fontFamily="@font/lato_bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/black"
+                tools:text="EUR"
+                android:textSize="16sp"
+                app:layout_constraintStart_toEndOf="@id/ivBuyFlag"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tvBuyName"
+                android:fontFamily="@font/lato_regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/black"
+                tools:text="Euro"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ivBuyFlag"
+                app:layout_constraintTop_toBottomOf="@id/tvBuyCode"/>
+
+            <TextView
+                android:id="@+id/tvBuyAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="+€150,00"
+                android:fontFamily="@font/lato_bold"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/layoutSellCurrency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@color/light_blue"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/ivSellFlag"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                android:layout_width="50dp"
+                android:layout_height="50dp"
+                tools:src="@drawable/rub_static" />
+
+            <TextView
+                android:id="@+id/tvSellCode"
+                android:fontFamily="@font/lato_bold"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/black"
+                tools:text="RUB"
+                android:textSize="16sp"
+                app:layout_constraintStart_toEndOf="@id/ivSellFlag"
+                app:layout_constraintTop_toTopOf="parent"/>
+
+            <TextView
+                android:id="@+id/tvSellName"
+                android:fontFamily="@font/lato_regular"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:textColor="@color/black"
+                tools:text="Rouble"
+                android:textSize="12sp"
+                app:layout_constraintStart_toEndOf="@id/ivSellFlag"
+                app:layout_constraintTop_toBottomOf="@id/tvSellCode"/>
+
+
+            <TextView
+                android:id="@+id/tvSellBalance"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/lato_regular"
+                android:textColor="@color/black"
+                tools:text="Balance: $kkjklk"
+                android:textSize="10sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toEndOf="@id/ivSellFlag"
+                app:layout_constraintTop_toBottomOf="@id/tvSellName"/>
+
+            <TextView
+                android:id="@+id/tvSellAmount"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="-руб. 13150,00"
+                android:fontFamily="@font/lato_bold"
+                android:textColor="@android:color/black"
+                android:textSize="16sp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent"/>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <TextView
+            android:id="@+id/btnExchange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_gravity="center"
+            android:background="@color/light_blue"
+            android:padding="16dp"
+            android:fontFamily="@font/lato_bold"
+            tools:text="Buy Euro for Russia Rouble"
+            android:textColor="@android:color/black"
+            android:textSize="12sp"
+            android:clickable="true"
+            android:focusable="true" />
+
+    </LinearLayout>
+
+
+
+</FrameLayout>

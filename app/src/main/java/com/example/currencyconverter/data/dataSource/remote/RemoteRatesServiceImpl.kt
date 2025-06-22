@@ -2,9 +2,10 @@ package com.example.currencyconverter.data.dataSource.remote
 
 import com.example.currencyconverter.data.dataSource.remote.dto.RateDto
 import kotlinx.coroutines.delay
+import javax.inject.Inject
 import kotlin.random.Random
 
-class RemoteRatesServiceImpl : RatesService {
+class RemoteRatesServiceImpl @Inject constructor() : RatesService {
 
     private val rates: Map<String, Double> = mapOf(
         "EUR" to 0.86033,
