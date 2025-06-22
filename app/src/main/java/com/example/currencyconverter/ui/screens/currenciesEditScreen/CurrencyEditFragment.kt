@@ -12,7 +12,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
-import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -29,8 +28,6 @@ import kotlinx.coroutines.launch
 @AndroidEntryPoint
 class CurrencyEditFragment : Fragment() {
 
-
-    private val args: CurrencyEditFragmentArgs by navArgs()
 
     private var _binding: FragmentCurrencyEditBinding? = null
     private val binding
