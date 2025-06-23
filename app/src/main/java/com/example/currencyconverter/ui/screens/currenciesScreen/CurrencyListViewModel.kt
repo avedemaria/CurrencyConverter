@@ -12,6 +12,7 @@ import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.mapper.CurrencyUiMapper
 import com.example.currencyconverter.ui.screens.CurrencyScreenMode
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -52,6 +53,7 @@ class CurrencyListViewModel @Inject constructor(
     private var autoRefreshJob: Job? = null
 
 
+
     init {
 
         viewModelScope.launch {
@@ -81,54 +83,53 @@ class CurrencyListViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun startAutoRefresh() {
+        if (autoRefreshJob?.isActive == true) return
+
+        autoRefreshJob = viewModelScope.launch {
+            _currencyListState
+                .filter { it is CurrencyListState.Success || it is CurrencyListState.MoveToTop }
+                .flatMapLatest {
+                    rates.debounce(1000)
+                }
+                .collectLatest {
+                    val currentState = _currencyListState.value
+                    val code = when (currentState) {
+                        is CurrencyListState.Success -> currentState.selectedCurrencyCode
+                        is CurrencyListState.MoveToTop -> currentState.currency.currencyCode
+                        else -> INITIAL_CURRENCY_CODE
+                    }
+
+                    val rateValue = when (currentState) {
+                        is CurrencyListState.Success -> currentState.rateValue
+                        is CurrencyListState.MoveToTop -> INITIAL_RATE_VALUE
+                        else -> INITIAL_RATE_VALUE
+                    }
+
+                    getRates(code, rateValue)
+                }
+        }
+    }
 
 //    fun startAutoRefresh() {
 //        if (autoRefreshJob?.isActive == true) return
 //
+//        Log.d(TAG, "startAutoRefresh called")
+//
 //        autoRefreshJob = viewModelScope.launch {
-//            _currencyListState
-//                .filter { it is CurrencyListState.Success || it is CurrencyListState.MoveToTop }
-//                .flatMapLatest {
-//                    rates.debounce(1000)
-//                }
+//            rates.debounce(1000)
 //                .collectLatest {
 //                    val currentState = _currencyListState.value
-//                    val code = when (currentState) {
-//                        is CurrencyListState.Success -> currentState.selectedCurrencyCode
-//                        is CurrencyListState.MoveToTop -> currentState.currency.currencyCode
-//                        else -> INITIAL_CURRENCY_CODE
+//                    if (currentState is CurrencyListState.Success ) {
+//                        val code = currentState.selectedCurrencyCode
+//                        val rateValue = currentState.rateValue
+//                        Log.d(TAG, "code $code  rate value $rateValue")
+//                        getRates(code, rateValue)
 //                    }
-//
-//                    // Базовая валюта для MoveToTop всегда 1
-//                    val rateValue = when (currentState) {
-//                        is CurrencyListState.Success -> currentState.rateValue
-//                        is CurrencyListState.MoveToTop -> 1.0
-//                        else -> INITIAL_RATE_VALUE
-//                    }
-//
-//                    getRates(code, rateValue)
 //                }
 //        }
 //    }
-
-    fun startAutoRefresh() {
-        if (autoRefreshJob?.isActive == true) return
-
-        Log.d(TAG, "startAutoRefresh called")
-
-        autoRefreshJob = viewModelScope.launch {
-            rates.debounce(1000)
-                .collectLatest {
-                    val currentState = _currencyListState.value
-                    if (currentState is CurrencyListState.Success ) {
-                        val code = currentState.selectedCurrencyCode
-                        val rateValue = currentState.rateValue
-                        Log.d(TAG, "code $code  rate value $rateValue")
-                        getRates(code, rateValue)
-                    }
-                }
-        }
-    }
 
 
     private suspend fun getRates(
@@ -211,8 +212,6 @@ class CurrencyListViewModel @Inject constructor(
     private fun toMoveToTop(currencies: List<CurrencyUiModel>, code: String) {
         val currenciesList = currencies.toMutableList()
         val selectedCurrency = currenciesList.find { it.currencyCode == code }
-        val currentRateValue = (_currencyListState.value as? CurrencyListState.Success)?.rateValue
-            ?: INITIAL_RATE_VALUE
 
 
         if (selectedCurrency != null) {

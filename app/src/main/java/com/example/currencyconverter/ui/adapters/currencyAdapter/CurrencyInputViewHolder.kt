@@ -51,10 +51,6 @@ class CurrencyInputViewHolder(
                 error(R.drawable.landscape_placeholder)
             }
 
-            tvAmount.text = String.format("%.2f", currency.amount)
-            Log.d("CurrencyInputViewHolder", "tv amount currency ${currency.amount}")
-
-
             textWatcherJob?.cancel()
             if (isSelected) {
                 etAmount.visibility = View.VISIBLE
@@ -84,7 +80,7 @@ class CurrencyInputViewHolder(
                         Log.d("CurrencyInputViewHolder", "Amount: $amount")
                         listener.onAmountChanged(currency, amount)
                         tvAmount.text = String.format("%.2f", amount)
-                        Log.d("CurrencyInputViewHolder", "tv amount currency2 $amount")
+                        Log.d("CurrencyInputViewHolder", "tv amount currency amount $amount")
                     }
                 }
 
@@ -96,6 +92,9 @@ class CurrencyInputViewHolder(
 
             } else {
                 etAmount.visibility = View.GONE
+                tvAmount.text = String.format("%.2f", currency.amount)
+                Log.d("CurrencyInputViewHolder", "tv amount currency1 ${currency.amount}")
+
                 tvAmount.visibility = View.VISIBLE
                 btnClearAmount.visibility = View.GONE
                 textWatcherJob?.cancel()
@@ -103,7 +102,6 @@ class CurrencyInputViewHolder(
 
             root.tag = currency
         }
-
 
         }
 

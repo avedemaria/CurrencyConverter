@@ -81,6 +81,7 @@ class CurrencyAdapter(
 
             when (holder) {
                 is CurrencyItemViewHolder -> {
+                    Log.d("CurrencyAdapter", "Binding CurrencyInputViewHolder2 at position $position")
                     for (payload in payloads) {
                         when (payload) {
                             is CurrencyChangePayLoad.RateValue -> holder.bindRateAmount(payload.newAmount, payload.symbol)
@@ -91,6 +92,7 @@ class CurrencyAdapter(
                 }
 
                 is CurrencyInputViewHolder -> {
+                    Log.d("CurrencyAdapter", "Binding CurrencyInputViewHolder2 at position $position")
                     for (payload in payloads) {
                         when (payload) {
                             is CurrencyChangePayLoad.EnteredAmount -> {}

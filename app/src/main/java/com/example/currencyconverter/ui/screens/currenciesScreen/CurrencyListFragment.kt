@@ -159,6 +159,8 @@ class CurrencyListFragment : Fragment() {
                             currenciesAdapter.submitList(state.currencies) {
                                 binding.rvCurrencies.scrollToPosition(0)
                             }
+                            viewModel.stopAutoRefresh()
+                            viewModel.startAutoRefresh()
                         }
                     }
                 }

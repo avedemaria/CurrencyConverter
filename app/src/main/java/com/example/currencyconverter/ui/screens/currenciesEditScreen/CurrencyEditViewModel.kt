@@ -51,14 +51,13 @@ class CurrencyEditViewModel @Inject constructor(
         viewModelScope.launch {
             loadInitialData()
         }
-
         viewModelScope.launch {
             _lastEnteredAmount
                 .collect { newAmount ->
-                    handleAmountChange(newAmount)
+                    Log.d(TAG, "new amount in collect $newAmount")
+                    updateAmount(newAmount)
                 }
         }
-
     }
 
 
@@ -112,38 +111,48 @@ class CurrencyEditViewModel @Inject constructor(
         }
     }
 
-
     fun updateAmount(newAmount: Double) {
         viewModelScope.launch {
-            _lastEnteredAmount.emit(newAmount)
+            val currentState = _currencyEditState.value
+            if (currentState is CurrencyEditState.Success) {
+                _lastEnteredAmount.emit(newAmount)
+                Log.d(TAG, "update amount last entered amount: ${lastEnteredAmount.value}")
+
+                val accounts = currentState.accounts
+                refreshCurrenciesAndFilter(newAmount, accounts)
+
+            }
         }
     }
-
-
-
 
 //    fun updateAmount(newAmount: Double) {
 //        viewModelScope.launch {
-//            val currentState = _currencyEditState.value
-//            if (currentState is CurrencyEditState.Success) {
-//                _lastEnteredAmount.emit(newAmount)
-//                Log.d(TAG, "update amount last entered amount: ${lastEnteredAmount.value}")
-//
-//                val accounts = currentState.accounts
-//                refreshCurrenciesAndFilter(newAmount, accounts)
-//
-//            }
+//            _lastEnteredAmount.emit(newAmount)
 //        }
 //    }
 
-    private fun handleAmountChange(newAmount: Double) {
-        val currentState = _currencyEditState.value
-        if (currentState is CurrencyEditState.Success) {
-            Log.d(TAG, "Handling amount change: $newAmount")
-            val accounts = currentState.accounts
-            refreshCurrenciesAndFilter(newAmount, accounts)
-        }
-    }
+//    fun updateAmount(updatedCurrency: CurrencyUiModel, newAmount: Double) {
+//        val currentState = _currencyEditState.value
+//        if (currentState is CurrencyEditState.Success) {
+//            val updatedCurrencies = currentState.currencies.map {
+//                if (it.currencyCode == updatedCurrency.currencyCode) {
+//                    it.copy(amount = newAmount)
+//                } else it
+//            }
+//            _currencyEditState.value = currentState.copy(currencies = updatedCurrencies)
+//        }
+//    }
+
+
+//
+//    private fun handleAmountChange(newAmount: Double) {
+//        val currentState = _currencyEditState.value
+//        if (currentState is CurrencyEditState.Success) {
+//            Log.d(TAG, "Handling amount change: $newAmount")
+//            val accounts = currentState.accounts
+//            refreshCurrenciesAndFilter(newAmount, accounts)
+//        }
+//    }
 
 
     fun getUpdatedCurrenciesForExchange(
