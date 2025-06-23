@@ -62,21 +62,6 @@
         </LinearLayout>
 
 
-        <TextView
-            android:id="@+id/tv_amount"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textColor="@color/dark_blue"
-            android:textSize="18sp"
-            android:fontFamily="@font/lato_regular"
-            android:layout_marginEnd="8dp"
-            tools:text="$ 1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"/>
-
-
 
         <EditText
             android:id="@+id/etAmount"
@@ -98,7 +83,6 @@
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             android:layout_marginEnd="8dp"/>
-
 
         <ImageButton
             android:id="@+id/btnClearAmount"

@@ -6,6 +6,7 @@ import com.example.currencyconverter.data.dataSource.remote.CurrencyApiFactory
 import com.example.currencyconverter.data.dataSource.remote.CurrencyApiService
 import com.example.currencyconverter.data.dataSource.room.ConverterDatabase
 import com.example.currencyconverter.data.dataSource.room.DebugDao
+import com.example.currencyconverter.data.dataSource.room.RoomMigrations
 import com.example.currencyconverter.data.dataSource.room.account.dao.AccountDao
 import com.example.currencyconverter.data.dataSource.room.account.dao.CurrencyDao
 import com.example.currencyconverter.data.dataSource.room.transaction.dao.TransactionDao
@@ -36,7 +37,7 @@ class DataModule {
             context,
             ConverterDatabase::class.java,
             "Converter_DB"
-        ).fallbackToDestructiveMigration().build()
+        ).addMigrations(RoomMigrations.MIGRATION_2_3).build()
     }
 
 

@@ -20,6 +20,8 @@ import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.adapters.currencyAdapter.CurrencyAdapter
 import com.example.currencyconverter.ui.adapters.currencyAdapter.OnCurrencyClickedListener
 import com.example.currencyconverter.ui.screens.CurrencyScreenMode
+import com.example.currencyconverter.utils.hide
+import com.example.currencyconverter.utils.show
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -65,26 +67,21 @@ class CurrencyEditFragment : Fragment() {
 
 
     private fun setUpAdapter() {
-
         currenciesAdapter = CurrencyAdapter(
             object : OnCurrencyClickedListener {
                 override fun onCurrencyClicked(currency: CurrencyUiModel) {
                     viewModel.getUpdatedCurrenciesForExchange(currency)?.let { (from, to) ->
-                        Log.d(TAG, " on currency clicked $from $to")
                         launchExchangeFragment(from, to)
                     }
                 }
 
-                override fun onAmountClicked(currency: CurrencyUiModel) {
+                override fun onAmountClicked(currency: CurrencyUiModel) {}
 
-                }
-
-                override fun onAmountChanged(currency: CurrencyUiModel, newAmount: Double) {
-                    Log.d(TAG, "Amount changed: $newAmount for currency ${currency.currencyCode}")
-                    viewModel.updateAmount(newAmount)
+                override fun onAmountChanged(currency: CurrencyUiModel) {
+                    viewModel.updateAmount(currency)
                 }
             },
-            screenMode = CurrencyScreenMode.INPUT_MODE
+            screenMode = CurrencyScreenMode.INPUT_MODE,
         )
 
         binding.rvCurrencies.apply {
@@ -110,16 +107,22 @@ class CurrencyEditFragment : Fragment() {
                 viewModel.currencyListState.collect { state ->
                     when (state) {
                         is CurrencyEditState.Error -> {
-                            binding.rvCurrencies.visibility = View.GONE
-                            binding.progressBar.visibility = View.GONE
+                            binding.errorContent.show()
+                            binding.errorContent.setOnRetryClickListener {
+                                viewModel.loadInitialData()
+                            }
+                            binding.rvCurrencies.hide()
+                            binding.progressBar.hide()
                         }
                         is CurrencyEditState.Loading -> {
-                            binding.rvCurrencies.visibility = View.GONE
-                            binding.progressBar.visibility = View.VISIBLE
+                            binding.progressBar.show()
+                            binding.rvCurrencies.hide()
+                            binding.errorContent.hide()
                         }
                         is CurrencyEditState.Success -> {
-                            binding.rvCurrencies.visibility = View.VISIBLE
-                            binding.progressBar.visibility = View.GONE
+                            binding.rvCurrencies.show()
+                            binding.progressBar.hide()
+                            binding.errorContent.hide()
 
                             currenciesAdapter.submitList(state.currencies)
                         }
@@ -144,13 +147,13 @@ class CurrencyEditFragment : Fragment() {
 
 
     private fun launchExchangeFragment(
-        currencyFrom: CurrencyUiModel,
-        currencyTo: CurrencyUiModel,
+        currencySell: CurrencyUiModel,
+        currencyBuy: CurrencyUiModel,
     ) {
         findNavController().navigate(
             CurrencyEditFragmentDirections.actionCurrencyEditFragmentToExchangeFragment(
-                currencyTo,
-                currencyFrom
+                currencySell,
+                currencyBuy
             )
         )
     }

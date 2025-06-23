@@ -1,6 +1,5 @@
 package com.example.currencyconverter.data.repository
 
-import android.util.Log
 import androidx.room.withTransaction
 import com.example.currencyconverter.data.dataSource.remote.CurrencyApiService
 import com.example.currencyconverter.data.dataSource.remote.RatesService
@@ -10,7 +9,6 @@ import com.example.currencyconverter.data.dataSource.room.account.dao.CurrencyDa
 import com.example.currencyconverter.data.dataSource.room.account.dbo.AccountDbo
 import com.example.currencyconverter.data.dataSource.room.account.dbo.CurrencyDbo
 import com.example.currencyconverter.data.dataSource.room.transaction.dao.TransactionDao
-import com.example.currencyconverter.data.dataSource.room.transaction.dbo.TransactionDbo
 import com.example.currencyconverter.data.mapper.AccountMapper
 import com.example.currencyconverter.data.mapper.CurrencyMapper
 import com.example.currencyconverter.data.mapper.TransactionMapper
@@ -37,33 +35,11 @@ class RepositoryImpl @Inject constructor(
 ) : Repository {
 
 
-//    override suspend fun getRatesWithInfo(baseCurrencyCode: String, amount: Double): List<Rate> =
-//        runCatching {
-//            val rateDtos = ratesService.getRates(baseCurrencyCode, amount)
-//            val accounts = accountDao.getAll()
-//
-//            val currencyInfoMap = currencyApiService
-//                .getCurrencyInfo()
-//                .takeIf { it.isSuccessful }
-//                ?.body()
-//                ?.data
-//                ?: return emptyList()
-//
-//            rateDtos.map { dto ->
-//                val account = accounts.find { it.code == dto.currency }
-//                val currencyInfo = currencyInfoMap[dto.currency]
-//                mapper.toRateEntity(dto, account, currencyInfo)
-//            }
-//        }.getOrElse { e ->
-//            Log.e(TAG, "Error while fetching data: ${e.message}", e)
-//            emptyList()
-//        }
-
-
     override suspend fun getRatesWithInfo(
         baseCurrencyCode: String,
         rateValue: Double,
     ): List<CurrencyItem> = runCatching {
+
         val rateDtos = ratesService.getRates(baseCurrencyCode, rateValue)
         val accounts = accountDao.getAll()
 
@@ -88,7 +64,6 @@ class RepositoryImpl @Inject constructor(
             }
         }
     }.getOrElse { e ->
-        Log.e(TAG, "Error while fetching data: ${e.message}", e)
         emptyList()
     }
 
@@ -98,8 +73,6 @@ class RepositoryImpl @Inject constructor(
             .onStart {
                 runCatching {
                    insertDefaultAccounts()
-                }.onFailure { error ->
-                    Log.e(TAG, "error while inserting RUB: ${error.message}", error)
                 }
             }
             .map { accountsDbo ->
@@ -107,8 +80,7 @@ class RepositoryImpl @Inject constructor(
                     accountMapper.toAccountEntity(dbo)
                 }
             }
-            .catch { error ->
-                Log.e(TAG, "Error in Flow: ${error.message}", error)
+            .catch {
                 emit(emptyList())
             }
     }
@@ -144,8 +116,6 @@ class RepositoryImpl @Inject constructor(
                 accountDao.insertAll(fromDbo)
                 accountDao.insertAll(toDbo)
             }
-        }.onFailure { e ->
-            Log.e(TAG, "error while inserting transaction and updating accounts: ${e.message}", e)
         }
     }
 
@@ -156,7 +126,6 @@ class RepositoryImpl @Inject constructor(
             }
         }
             .getOrElse { e ->
-                Log.e(TAG, "Error while fetching transactions: ${e.message}", e)
                 emptyList()
             }
     }

@@ -1,6 +1,5 @@
 package com.example.currencyconverter.ui.screens.currenciesScreen
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.currencyconverter.domain.entity.Account
@@ -52,10 +51,12 @@ class CurrencyListViewModel @Inject constructor(
 
     private var autoRefreshJob: Job? = null
 
-
-
     init {
+        loadInitialData()
+    }
 
+
+    fun loadInitialData() {
         viewModelScope.launch {
 
             _currencyListState.value = CurrencyListState.Loading
@@ -112,25 +113,6 @@ class CurrencyListViewModel @Inject constructor(
         }
     }
 
-//    fun startAutoRefresh() {
-//        if (autoRefreshJob?.isActive == true) return
-//
-//        Log.d(TAG, "startAutoRefresh called")
-//
-//        autoRefreshJob = viewModelScope.launch {
-//            rates.debounce(1000)
-//                .collectLatest {
-//                    val currentState = _currencyListState.value
-//                    if (currentState is CurrencyListState.Success ) {
-//                        val code = currentState.selectedCurrencyCode
-//                        val rateValue = currentState.rateValue
-//                        Log.d(TAG, "code $code  rate value $rateValue")
-//                        getRates(code, rateValue)
-//                    }
-//                }
-//        }
-//    }
-
 
     private suspend fun getRates(
         code: String,
@@ -141,8 +123,6 @@ class CurrencyListViewModel @Inject constructor(
         }.onSuccess { currencies ->
             if (currencies.isNotEmpty()) {
                 buildSuccessState(currencies, code, amount)
-            } else {
-                Log.w(TAG, "Received empty rates list")
             }
         }.onFailure { error ->
             _currencyListState.value = CurrencyListState.Error
@@ -191,7 +171,6 @@ class CurrencyListViewModel @Inject constructor(
     }
 
     fun selectCurrency(code: String) {
-        Log.d(TAG, "select currency")
 
         val currentState = _currencyListState.value
         if (currentState is CurrencyListState.Success) {

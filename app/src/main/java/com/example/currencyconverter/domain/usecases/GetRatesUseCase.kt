@@ -1,6 +1,5 @@
 package com.example.currencyconverter.domain.usecases
 
-import android.util.Log
 import com.example.currencyconverter.domain.entity.CurrencyItem
 import com.example.currencyconverter.domain.repository.Repository
 import javax.inject.Inject

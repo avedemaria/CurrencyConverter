@@ -19,6 +19,12 @@
         app:indicatorColor="@color/light_blue"/>
 
 
+    <com.example.currencyconverter.ui.widgets.ErrorView
+        android:id = "@+id/errorContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+
 
     <LinearLayout
         android:id = "@id/content"

@@ -13,7 +13,7 @@ import com.example.currencyconverter.data.dataSource.room.transaction.dbo.Transa
 
 @Database(
     entities = [AccountDbo::class, TransactionDbo::class, CurrencyDbo::class],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

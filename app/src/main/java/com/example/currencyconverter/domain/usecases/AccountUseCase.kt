@@ -7,7 +7,6 @@ import javax.inject.Inject
 
 class AccountUseCase @Inject constructor(private val repository: Repository) {
 
-
     suspend fun getAccountsFromRoom(): Flow<List<Account>> {
         return repository.getAccountsFromRoom()
     }

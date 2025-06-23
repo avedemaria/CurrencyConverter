@@ -32,9 +32,12 @@ class TransactionViewModel @Inject constructor(
 
 
     init {
-        viewModelScope.launch {
-            _transactionState.value = TransactionState.Loading
+        loadTransactions()
+    }
 
+
+    fun loadTransactions() {
+        viewModelScope.launch {
             try {
                 transactionUseCase.getTransactions().let { transactions ->
                     _transactionState.value = when {
@@ -49,5 +52,4 @@ class TransactionViewModel @Inject constructor(
 
         }
     }
-
 }

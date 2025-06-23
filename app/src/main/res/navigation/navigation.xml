@@ -33,15 +33,15 @@
         android:name="com.example.currencyconverter.ui.screens.exchangeScreen.ExchangeFragment"
         android:label="fragment_echange"
         tools:layout="@layout/fragment_exchange" >
-        <argument
-            android:name="currencyTo"
-            app:argType="com.example.currencyconverter.ui.CurrencyUiModel" />
-        <argument
-            android:name="currencyFrom"
-            app:argType="com.example.currencyconverter.ui.CurrencyUiModel" />
         <action
             android:id="@+id/action_exchangeFragment_to_currencyListFragment"
             app:destination="@id/currencyListFragment" />
+        <argument
+            android:name="currencySell"
+            app:argType="com.example.currencyconverter.ui.CurrencyUiModel" />
+        <argument
+            android:name="currencyBuy"
+            app:argType="com.example.currencyconverter.ui.CurrencyUiModel" />
     </fragment>
     <fragment
         android:id="@+id/transactionsFragment"

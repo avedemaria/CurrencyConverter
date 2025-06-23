@@ -1,7 +1,6 @@
 package com.example.currencyconverter.ui.screens.currenciesScreen
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -21,9 +20,10 @@ import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.adapters.currencyAdapter.CurrencyAdapter
 import com.example.currencyconverter.ui.adapters.currencyAdapter.OnCurrencyClickedListener
 import com.example.currencyconverter.ui.screens.CurrencyScreenMode
+import com.example.currencyconverter.utils.hide
+import com.example.currencyconverter.utils.show
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -83,12 +83,10 @@ class CurrencyListFragment : Fragment() {
         currenciesAdapter = CurrencyAdapter(
             listener = object : OnCurrencyClickedListener {
                 override fun onCurrencyClicked(currency: CurrencyUiModel) {
-                    Log.d(TAG, "on currency clicked")
                     viewModel.selectCurrency(currency.currencyCode)
                 }
 
                 override fun onAmountClicked(currency: CurrencyUiModel) {
-                    Log.d(TAG, "selected rate ${currency.rateValue}")
                     if (currency.balance<=0) {
                         showSnackbar(getString(R.string.balance_is_too_low))
                         return
@@ -97,7 +95,7 @@ class CurrencyListFragment : Fragment() {
                     }
                 }
 
-                override fun onAmountChanged(currency: CurrencyUiModel, newAmount: Double) {
+                override fun onAmountChanged(currency: CurrencyUiModel) {
 
                 }
             },
@@ -118,39 +116,39 @@ class CurrencyListFragment : Fragment() {
 
     }
 
-
     private fun observeViewModel() {
         handleState()
         handleEvent()
     }
 
-
     private fun handleState() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 viewModel.currencyListState.collect { state ->
-                    Log.d(TAG, "cuurent state $state")
                     when (state) {
 
                         is CurrencyListState.Error -> {
-                            binding.errorView.showError()
-                            binding.rvCurrencies.visibility = View.GONE
-                            binding.fabTransactions.visibility = View.GONE
-                            binding.progressBar.visibility = View.GONE
+                            binding.errorView.show()
+                            binding.errorView.setOnRetryClickListener {
+                                viewModel.loadInitialData()
+                            }
+                            binding.rvCurrencies.hide()
+                            binding.fabTransactions.hide()
+                            binding.progressBar.hide()
                         }
 
                         is CurrencyListState.Loading -> {
                             binding.errorView.hide()
-                            binding.rvCurrencies.visibility = View.GONE
-                            binding.fabTransactions.visibility = View.GONE
-                            binding.progressBar.visibility = View.VISIBLE
+                            binding.rvCurrencies.hide()
+                            binding.fabTransactions.hide()
+                            binding.progressBar.show()
                         }
 
                         is CurrencyListState.Success -> {
+                            binding.rvCurrencies.show()
+                            binding.fabTransactions.show()
                             binding.errorView.hide()
-                            binding.rvCurrencies.visibility = View.VISIBLE
-                            binding.fabTransactions.visibility = View.VISIBLE
-                            binding.progressBar.visibility = View.GONE
+                            binding.progressBar.hide()
 
                             currenciesAdapter.submitList(state.currencies)
                         }

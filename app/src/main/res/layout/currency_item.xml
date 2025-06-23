@@ -61,15 +61,13 @@
         </LinearLayout>
 
         <TextView
-            android:id="@+id/tv_amount"
+            android:id="@+id/tv_rateValue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="8dp"
-            android:ellipsize="end"
             android:fontFamily="@font/lato_regular"
-            android:scrollHorizontally="true"
             android:maxWidth="100dp"
-            android:maxLines="1"
+            android:singleLine="true"
             android:textColor="@color/dark_blue"
             android:textSize="18sp"
             android:textStyle="bold"

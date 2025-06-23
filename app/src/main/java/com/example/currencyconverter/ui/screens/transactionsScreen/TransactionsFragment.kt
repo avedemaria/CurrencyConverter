@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.currencyconverter.databinding.FragmentTransactionsBinding
 import com.example.currencyconverter.ui.adapters.transactionAdapter.TransactionAdapter
+import com.example.currencyconverter.utils.hide
+import com.example.currencyconverter.utils.show
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -95,32 +97,42 @@ class TransactionsFragment : Fragment() {
                 viewModel.transactionState.collect { state ->
                     when (state) {
                         is TransactionState.Error -> {
-                            binding.contentSuccess.visibility = View.GONE
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmptyTransactions.visibility = View.GONE
+                            binding.errorContent.show()
+                            binding.errorContent.setOnRetryClickListener {
+                                viewModel.loadTransactions()
+                            }
+
+                            binding.contentSuccess.hide()
+                            binding.progressBar.hide()
+                            binding.tvEmptyTransactions.hide()
                         }
 
                         is TransactionState.Loading -> {
-                            binding.contentSuccess.visibility = View.GONE
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.tvEmptyTransactions.visibility = View.GONE
+                            binding.progressBar.show()
+                            binding.errorContent.hide()
+                            binding.contentSuccess.hide()
+                            binding.tvEmptyTransactions.hide()
 
                         }
 
                         is TransactionState.Success -> {
-                            binding.contentSuccess.visibility = View.VISIBLE
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmptyTransactions.visibility = View.GONE
+                            binding.contentSuccess.show()
+                            binding.errorContent.hide()
+                            binding.progressBar.hide()
+                            binding.errorContent.hide()
+                            binding.tvEmptyTransactions.hide()
 
                             transactionsAdapter.submitList(state.transactions)
                         }
 
                         TransactionState.Empty -> {
-                            binding.contentSuccess.visibility = View.VISIBLE
-                            binding.rvTransactions.visibility = View.GONE
-                            binding.fabBack.visibility = View.VISIBLE
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmptyTransactions.visibility = View.VISIBLE
+                            binding.contentSuccess.show()
+                            binding.fabBack.show()
+                            binding.tvEmptyTransactions.show()
+                            binding.rvTransactions.hide()
+                            binding.errorContent.hide()
+                            binding.progressBar.hide()
+
                         }
                     }
                 }

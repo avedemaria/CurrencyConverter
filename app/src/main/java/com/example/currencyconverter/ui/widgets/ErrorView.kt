@@ -3,9 +3,9 @@ package com.example.currencyconverter.ui.widgets
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.FrameLayout
 import com.example.currencyconverter.databinding.ErrorViewBinding
+import com.example.currencyconverter.utils.hide
 
 class ErrorView @JvmOverloads constructor(
     context: Context,
@@ -16,17 +16,8 @@ class ErrorView @JvmOverloads constructor(
     private val binding = ErrorViewBinding.inflate(LayoutInflater.from(context), this)
 
     init {
-        visibility = View.GONE
+       hide()
     }
-
-    fun showError() {
-        visibility = View.VISIBLE
-    }
-
-    fun hide() {
-        visibility = View.GONE
-    }
-
     fun setOnRetryClickListener(listener: () -> Unit) {
         binding.btnRetry.setOnClickListener { listener() }
     }

@@ -20,16 +20,12 @@ class CurrencyItemDiffCallback : DiffUtil.ItemCallback<CurrencyUiModel>() {
                 CurrencyChangePayLoad.EnteredAmount(newItem.amount)
             }
 
-
             oldItem.rateValue != newItem.rateValue -> {
                 CurrencyChangePayLoad.RateValue(newItem.rateValue, newItem.symbol)
             }
-
             oldItem.balance != newItem.balance -> {
                 CurrencyChangePayLoad.Balance(newItem.balance, newItem.symbol)
             }
-
-
 
             else -> super.getChangePayload(oldItem, newItem)
         }

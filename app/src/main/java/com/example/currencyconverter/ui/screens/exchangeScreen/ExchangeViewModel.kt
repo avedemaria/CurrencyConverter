@@ -37,14 +37,14 @@ class ExchangeViewModel @Inject constructor(
    fun loadExchangeRate(
         baseCurrencyCode: String,
         targetCurrencyCode: String,
-        amount: Double = 1.0,
+        rateValue: Double = 1.0,
     ) {
         viewModelScope.launch {
             _exchangeState.value = ExchangeState.Loading
             try {
-                val rates = getRatesUseCase.invoke(baseCurrencyCode, amount)
-
-                val result = ExchangeRateUtils.calculateExchangeRate(rates, baseCurrencyCode, targetCurrencyCode)
+                val rates = getRatesUseCase.invoke(baseCurrencyCode, rateValue)
+                val result = ExchangeRateUtils.calculateExchangeRate(rates, baseCurrencyCode,
+                    targetCurrencyCode)
                 _exchangeState.value = ExchangeState.Success(result)
             } catch (e: Exception) {
                 _exchangeState.value = ExchangeState.Error
@@ -90,4 +90,5 @@ class ExchangeViewModel @Inject constructor(
             }
         }
     }
+
 }

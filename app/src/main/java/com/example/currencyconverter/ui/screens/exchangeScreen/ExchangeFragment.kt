@@ -2,11 +2,9 @@ package com.example.currencyconverter.ui.screens.exchangeScreen
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -19,11 +17,13 @@ import com.example.currencyconverter.databinding.FragmentExchangeBinding
 import com.example.currencyconverter.domain.entity.Account
 import com.example.currencyconverter.domain.entity.Currency
 import com.example.currencyconverter.ui.CurrencyUiModel
+import com.example.currencyconverter.utils.hide
+import com.example.currencyconverter.utils.show
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
-
+@SuppressLint("DefaultLocale", "SetTextI18n")
 @AndroidEntryPoint
 class ExchangeFragment : Fragment() {
 
@@ -55,17 +55,21 @@ class ExchangeFragment : Fragment() {
         initUi()
 
         viewModel.loadExchangeRate(
-            baseCurrencyCode = args.currencyFrom.currencyCode,
-            targetCurrencyCode = args.currencyTo.currencyCode,
-            amount = 1.0
+            baseCurrencyCode = args.currencySell.currencyCode,
+            targetCurrencyCode = args.currencyBuy.currencyCode
         )
 
         binding.btnExchange.setOnClickListener {
+
             val fromAccount = getFromAccount()
             val toAccount = getToAccount()
-            val fromAmount = args.currencyFrom.amount
-            val toAmount = args.currencyTo.amount
-            Log.d("ExchangeDebug", "fromAmount=$fromAmount, toAmount=$toAmount")
+            val fromAmount = args.currencySell.amount
+            val toAmount = args.currencyBuy.amount
+
+            if (fromAmount > fromAccount.balance) {
+                showSnackbar("Your balance is too low")
+                return@setOnClickListener
+            }
 
             viewModel.saveTransaction(fromAccount, toAccount, fromAmount, toAmount)
             launchCurrencyListFragment()
@@ -92,18 +96,27 @@ class ExchangeFragment : Fragment() {
                 viewModel.exchangeState.collect { state ->
                     when (state) {
                         is ExchangeState.Error -> {
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.content.visibility = View.GONE
+                            binding.errorContent.show()
+                            binding.errorContent.setOnRetryClickListener {
+                                viewModel.loadExchangeRate(
+                                    baseCurrencyCode = args.currencySell.currencyCode,
+                                    targetCurrencyCode = args.currencyBuy.currencyCode,
+                                )
+                            }
+                            binding.progressBar.hide()
+                            binding.content.hide()
                         }
 
                         is ExchangeState.Loading -> {
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.content.visibility = View.GONE
+                            binding.progressBar.show()
+                            binding.errorContent.hide()
+                            binding.content.hide()
                         }
 
                         is ExchangeState.Success -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.content.visibility = View.VISIBLE
+                            binding.content.show()
+                            binding.progressBar.hide()
+                            binding.errorContent.hide()
 
                             val rate = state.exchangeRate
                             updateExchangeRate(rate)
@@ -134,50 +147,42 @@ class ExchangeFragment : Fragment() {
         }
     }
 
-
     private fun initUi() {
-        val buyCurrency = args.currencyTo
-        val sellCurrency = args.currencyFrom
-
-        Log.d("ExchangeFragment", "currencyFrom = $buyCurrency")
-        Log.d("ExchangeFragment", "currencyTo = $sellCurrency")
+        val buyCurrency = args.currencyBuy
+        val sellCurrency = args.currencySell
 
         setUpViews(buyCurrency, sellCurrency)
     }
 
 
-    @SuppressLint("DefaultLocale", "SetTextI18n")
     private fun setUpViews(
         buyCurrency: CurrencyUiModel,
         sellCurrency: CurrencyUiModel,
     ) {
+        with(binding) {
+            tvTitle.text = "${buyCurrency.currencyName} to ${sellCurrency.currencyName}"
 
-        binding.tvTitle.text = "${buyCurrency.currencyName} to ${sellCurrency.currencyName}"
+            ivBuyFlag.setImageResource(buyCurrency.drawableId)
+            tvBuyCode.text = buyCurrency.currencyCode
+            tvBuyName.text = buyCurrency.currencyName
+            tvBuyAmount.text =
+                String.format("+%s %.2f", buyCurrency.symbol, buyCurrency.rateValue)
 
-        binding.ivBuyFlag.setImageResource(buyCurrency.drawableId)
-        binding.tvBuyCode.text = buyCurrency.currencyCode
-        binding.tvBuyName.text = buyCurrency.currencyName
-        Log.d("ExchangeDebug", "tv валюта с плюсом text = '${buyCurrency.amount}'" )
-        binding.tvBuyAmount.text =
-            String.format("+%s %.2f", buyCurrency.symbol, buyCurrency.amount)
+            ivSellFlag.setImageResource(sellCurrency.drawableId)
+            tvSellCode.text = sellCurrency.currencyCode
+            tvSellName.text = sellCurrency.currencyName
+            tvSellAmount.text = "-${sellCurrency.symbol}${sellCurrency.amount}"
+            tvSellBalance.text = String.format("Balance: %.2f", sellCurrency.balance)
 
-        binding.ivSellFlag.setImageResource(sellCurrency.drawableId)
-        binding.tvSellCode.text = sellCurrency.currencyCode
-        binding.tvSellName.text = sellCurrency.currencyName
-
-        binding.tvSellAmount.text = "-${sellCurrency.symbol}${sellCurrency.amount}"
-
-
-        binding.tvSellBalance.text = String.format("Balance: %.2f", sellCurrency.balance)
-
-        binding.btnExchange.text =
-            "Buy ${buyCurrency.currencyName} for ${sellCurrency.currencyName}"
+            btnExchange.text = "Buy ${buyCurrency.currencyName} for ${sellCurrency.currencyName}"
+        }
 
     }
 
     private fun updateExchangeRate(rate: Double) {
-        val buyCurrency = args.currencyTo
-        val sellCurrency = args.currencyFrom
+        val buyCurrency = args.currencyBuy
+        val sellCurrency = args.currencySell
+
         binding.tvExchangeRate.text = String.format(
             "%s 1 = %s %.2f",
             buyCurrency.symbol,
@@ -186,9 +191,8 @@ class ExchangeFragment : Fragment() {
         )
     }
 
-
     private fun getFromAccount(): Account {
-        val sellCurrency = args.currencyFrom
+        val sellCurrency = args.currencySell
         return Account(
             code = Currency.valueOf(sellCurrency.currencyCode),
             balance = sellCurrency.balance
@@ -196,7 +200,7 @@ class ExchangeFragment : Fragment() {
     }
 
     private fun getToAccount(): Account {
-        val buyCurrency = args.currencyTo
+        val buyCurrency = args.currencyBuy
         return Account(
             code = Currency.valueOf(buyCurrency.currencyCode),
             balance = buyCurrency.balance

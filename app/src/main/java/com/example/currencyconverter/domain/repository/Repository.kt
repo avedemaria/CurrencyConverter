@@ -9,7 +9,7 @@ interface Repository {
 
     suspend fun getRatesWithInfo(
         baseCurrencyCode: String,
-        amount: Double,
+        rateValue: Double,
     ): List<CurrencyItem>
 
 

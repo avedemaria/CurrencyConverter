@@ -28,18 +28,17 @@ import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
+@SuppressLint("DefaultLocale", "SetTextI18n", "ClickableViewAccessibility")
 class CurrencyInputViewHolder(
     private val binding: CurrencyItemInputModeBinding,
-    private val listener: OnCurrencyClickedListener
 ) : RecyclerView.ViewHolder(binding.root) {
 
     private var textWatcherJob: Job? = null
 
-
-    @SuppressLint("DefaultLocale")
-    fun bind(currency: CurrencyUiModel, isSelected: Boolean) {
-        Log.d("CurrencyInputViewHolder", "Binding currency: $currency, isSelected=$isSelected")
-
+    fun bind(
+        currency: CurrencyUiModel,
+        onChanged: (CurrencyUiModel) -> Unit,
+    ) {
         with(binding) {
             tvCode.text = currency.currencyCode
             tvCurrencyName.text = currency.currencyName
@@ -52,87 +51,58 @@ class CurrencyInputViewHolder(
             }
 
             textWatcherJob?.cancel()
-            if (isSelected) {
                 etAmount.visibility = View.VISIBLE
-                tvAmount.visibility = View.GONE
                 btnClearAmount.visibility = View.VISIBLE
 
-
-                etAmount.setText(etAmount.text.toString() + ".00")
-
-                val amountFlow = etAmount.textChanges()
-                    .map { it.trim() }
-                    .filter { it.isNotEmpty() }
-                    .map { text ->
-                        var value = text.toString()
-                        if (!value.endsWith(".00")) {
-                            value += ".00"
-                            etAmount.setText(value)
-                            etAmount.setSelection(value.length - 3)
-                        }
-                        value.removeSuffix(".00").toDoubleOrNull() ?: 0.0
-                    }
-                    .distinctUntilChanged()
-
-
-                textWatcherJob = CoroutineScope(Dispatchers.Main).launch {
-                    amountFlow.collect { amount ->
-                        Log.d("CurrencyInputViewHolder", "Amount: $amount")
-                        listener.onAmountChanged(currency, amount)
-                        tvAmount.text = String.format("%.2f", amount)
-                        Log.d("CurrencyInputViewHolder", "tv amount currency amount $amount")
-                    }
-                }
+                val fixedSuffix = ".00"
+                val initialValue = currency.amount.toInt().toString()
+                etAmount.setText(initialValue + fixedSuffix)
+                etAmount.setSelection(initialValue.length)
 
                 btnClearAmount.setOnClickListener {
-                    etAmount.setText("0.00")
-                    etAmount.setSelection(etAmount.text.length - 3)
-                    listener.onAmountChanged(currency, 0.0)
+                    etAmount.setText("0$fixedSuffix")
+                    etAmount.setSelection(1)
                 }
 
-            } else {
-                etAmount.visibility = View.GONE
-                tvAmount.text = String.format("%.2f", currency.amount)
-                Log.d("CurrencyInputViewHolder", "tv amount currency1 ${currency.amount}")
-
-                tvAmount.visibility = View.VISIBLE
-                btnClearAmount.visibility = View.GONE
-                textWatcherJob?.cancel()
-            }
-
+                etAmount.setUpEtAmount { value ->
+                    onChanged(currency.copy(amount = value))
+                }
             root.tag = currency
         }
+    }
 
+
+    private fun EditText.setUpEtAmount(onChanged: (Double) -> Unit) {
+        setOnTouchListener { v, _ ->
+            v as EditText
+            val dotIndex = v.text.indexOf(".")
+            v.post {
+                if (v.selectionStart > dotIndex) {
+                    v.setSelection(dotIndex)
+                }
+            }
+            false
         }
 
+        doOnTextChanged { text, _, _, _ ->
+            val valueText = text.toString()
 
-//    fun bindAmount(newAmount: Double) {
-//        binding.tvAmount.text = String.format("%.2f", newAmount)
-//        if (binding.etAmount.visibility == View.VISIBLE) {
-//            isUpdating = true
-//            binding.etAmount.setText(String.format("%.2f", newAmount))
-//            fixCursorPosition()
-//            isUpdating = false
-//        }
-//    }
-//
-//
-//    private fun fixCursorPosition() {
-//        val position = binding.etAmount.text.length - 3
-//        if (position >= 0) {
-//            binding.etAmount.setSelection(position)
-//        }
-//    }
-}
+            val dotIndex = valueText.indexOf(".")
+            val numberPart = if (dotIndex != -1) valueText.substring(0, dotIndex) else valueText
 
-fun EditText.textChanges(): Flow<String> {
-    return callbackFlow {
-        val listener = doOnTextChanged { text, _, _, _ ->
-            trySend(text.toString())
+            val fixedText = "$numberPart.00"
+
+            if (fixedText != valueText) {
+                setText(fixedText)
+                setSelection(numberPart.length)
+            }
+
+            val value = numberPart.toDoubleOrNull() ?: 0.0
+            onChanged(value)
         }
-        awaitClose { removeTextChangedListener(listener) }
-    }.onStart { emit(text.toString()) }
+    }
 }
+
 
 
 
