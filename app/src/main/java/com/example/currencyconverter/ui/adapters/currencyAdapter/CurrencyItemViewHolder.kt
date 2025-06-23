@@ -14,8 +14,8 @@ class CurrencyItemViewHolder(
 
 
     init {
-        binding.root.setOnClickListener {
-            val currency = it.tag as? CurrencyUiModel
+        binding.root.setOnClickListener { _it ->
+            val currency = _it.tag as? CurrencyUiModel
             currency?.let { listener.onCurrencyClicked(it) }
         }
 
@@ -56,10 +56,7 @@ class CurrencyItemViewHolder(
         binding.tvAmount.text = String.format("Balance: %s %.2f", symbol, newBalance)
     }
 
-    fun bindIsSelected(isSelected: Boolean) {
-        binding.root.isSelected = isSelected
 
-    }
 
 
 }

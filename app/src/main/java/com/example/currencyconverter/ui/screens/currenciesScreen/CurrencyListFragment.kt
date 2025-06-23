@@ -23,6 +23,7 @@ import com.example.currencyconverter.ui.adapters.currencyAdapter.OnCurrencyClick
 import com.example.currencyconverter.ui.screens.CurrencyScreenMode
 import com.google.android.material.snackbar.Snackbar
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 
@@ -103,15 +104,6 @@ class CurrencyListFragment : Fragment() {
             screenMode = CurrencyScreenMode.LIST_MODE
         )
 
-        val observer = object : RecyclerView.AdapterDataObserver() {
-            override fun onChanged() {
-                Log.d(TAG, "on changed")
-                binding.rvCurrencies.scrollToPosition(0)
-                currenciesAdapter.unregisterAdapterDataObserver(this)
-            }
-        }
-        currenciesAdapter.registerAdapterDataObserver(observer)
-
         binding.rvCurrencies.apply {
             layoutManager = LinearLayoutManager(
                 requireContext(), RecyclerView.VERTICAL,
@@ -161,6 +153,12 @@ class CurrencyListFragment : Fragment() {
                             binding.progressBar.visibility = View.GONE
 
                             currenciesAdapter.submitList(state.currencies)
+                        }
+
+                        is CurrencyListState.MoveToTop -> {
+                            currenciesAdapter.submitList(state.currencies) {
+                                binding.rvCurrencies.scrollToPosition(0)
+                            }
                         }
                     }
                 }

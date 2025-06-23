@@ -4,9 +4,8 @@ import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.currencyconverter.domain.entity.Account import com.example.currencyconverter.domain.entity.CurrencyItem
+import com.example.currencyconverter.domain.entity.Account
 import com.example.currencyconverter.domain.usecases.AccountUseCase
-import com.example.currencyconverter.domain.usecases.GetCurrenciesUseCase
 import com.example.currencyconverter.domain.usecases.GetRatesUseCase
 import com.example.currencyconverter.ui.CurrencyUiModel
 import com.example.currencyconverter.ui.mapper.CurrencyUiMapper
@@ -18,6 +17,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -27,7 +27,6 @@ import javax.inject.Inject
 @HiltViewModel
 class CurrencyEditViewModel @Inject constructor(
     private val getRatesUseCase: GetRatesUseCase,
-    private val getCurrenciesUseCase: GetCurrenciesUseCase,
     private val accountUseCase: AccountUseCase,
     private val uiMapper: CurrencyUiMapper,
     savedStateHandle: SavedStateHandle,
@@ -52,6 +51,14 @@ class CurrencyEditViewModel @Inject constructor(
         viewModelScope.launch {
             loadInitialData()
         }
+
+        viewModelScope.launch {
+            _lastEnteredAmount
+                .collect { newAmount ->
+                    handleAmountChange(newAmount)
+                }
+        }
+
     }
 
 
@@ -107,15 +114,31 @@ class CurrencyEditViewModel @Inject constructor(
 
     fun updateAmount(newAmount: Double) {
         viewModelScope.launch {
-            val currentState = _currencyEditState.value
-            if (currentState is CurrencyEditState.Success) {
-                _lastEnteredAmount.emit(newAmount)
-                Log.d(TAG, "update amount last entered amount: ${lastEnteredAmount.value}")
+            _lastEnteredAmount.emit(newAmount)
+        }
+    }
 
-                val accounts = currentState.accounts
-                refreshCurrenciesAndFilter(newAmount, accounts)
 
-            }
+//    fun updateAmount(newAmount: Double) {
+//        viewModelScope.launch {
+//            val currentState = _currencyEditState.value
+//            if (currentState is CurrencyEditState.Success) {
+//                _lastEnteredAmount.emit(newAmount)
+//                Log.d(TAG, "update amount last entered amount: ${lastEnteredAmount.value}")
+//
+//                val accounts = currentState.accounts
+//                refreshCurrenciesAndFilter(newAmount, accounts)
+//
+//            }
+//        }
+//    }
+
+    private fun handleAmountChange(newAmount: Double) {
+        val currentState = _currencyEditState.value
+        if (currentState is CurrencyEditState.Success) {
+            Log.d(TAG, "Handling amount change: $newAmount")
+            val accounts = currentState.accounts
+            refreshCurrenciesAndFilter(newAmount, accounts)
         }
     }
 
@@ -130,6 +153,7 @@ class CurrencyEditViewModel @Inject constructor(
                 currentState.currencies.find { it.currencyCode == currentState.selectedCurrencyCode }
             val amount = currentState.enteredAmount
             val target = selectedTo
+            Log.d(TAG, "Target rate: ${target.rateValue}, amount: $amount, calculated: ${amount * target.rateValue}")
 
             if (source != null) {
                 val updatedFrom = source.copy(amount = amount)
@@ -151,7 +175,6 @@ class CurrencyEditViewModel @Inject constructor(
 
         Log.d(TAG, "filter available currencies")
 
-
         return currencies.filter { currency ->
             if (currency.currencyCode == selectedCurrencyCode) {
                 true
@@ -171,8 +194,7 @@ class CurrencyEditViewModel @Inject constructor(
             }
         }
     }
-
-
+    
     companion object {
         private const val INITIAL_RATE_VALUE = 1.0
         private const val TAG = "CurrencyEditViewModel"

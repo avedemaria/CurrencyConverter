@@ -3,6 +3,7 @@ package com.example.currencyconverter.ui.adapters.currencyAdapter
 import android.annotation.SuppressLint
 import android.text.Editable
 import android.text.TextWatcher
+import android.text.method.ScrollingMovementMethod
 import android.util.Log
 import android.view.View
 import android.widget.EditText
@@ -21,8 +22,10 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
 class CurrencyInputViewHolder(
@@ -31,7 +34,6 @@ class CurrencyInputViewHolder(
 ) : RecyclerView.ViewHolder(binding.root) {
 
     private var textWatcherJob: Job? = null
-    private var isUpdating = false
 
 
     @SuppressLint("DefaultLocale")
@@ -50,59 +52,41 @@ class CurrencyInputViewHolder(
             }
 
             tvAmount.text = String.format("%.2f", currency.amount)
+            Log.d("CurrencyInputViewHolder", "tv amount currency ${currency.amount}")
 
-
-            etAmount.textChanges()
 
             textWatcherJob?.cancel()
-
             if (isSelected) {
                 etAmount.visibility = View.VISIBLE
                 tvAmount.visibility = View.GONE
                 btnClearAmount.visibility = View.VISIBLE
 
 
-                if (!etAmount.text.toString().endsWith(".00")) {
-                    etAmount.setText("${etAmount.text}.00")
-                }
-                fixCursorPosition()
+                etAmount.setText(etAmount.text.toString() + ".00")
 
-                textWatcherJob?.cancel()
                 textWatcherJob = CoroutineScope(Dispatchers.Main).launch {
                     etAmount.textChanges()
+                        .map { it.trim() }
+                        .filter { it.isNotEmpty() }
                         .collect { text ->
-                            if (isUpdating) return@collect
-
-                            var raw = text
-                            if (!raw.endsWith(".00")) {
-                                isUpdating = true
-                                raw = raw.replace(".00", "")
-                                etAmount.setText("$raw.00")
-                                fixCursorPosition()
-                                isUpdating = false
-                            } else {
-                                fixCursorPosition()
+                            var value = text
+                            if (!value.endsWith(".00")) {
+                                value += ".00"
+                                etAmount.setText(value)
+                                etAmount.setSelection(value.length - 3)
                             }
-
-
-                            val numericPart = raw.removeSuffix(".00")
-                            val amount = numericPart.toDoubleOrNull() ?: 0.0
+                            val amount = value.removeSuffix(".00").toDoubleOrNull() ?: 0.0
+                            Log.d("CurrencyInputViewHolder", "$amount")
                             listener.onAmountChanged(currency, amount)
+                            tvAmount.text = String.format("%.2f", currency.amount)
+                            Log.d("CurrencyInputViewHolder", "tv amount currency2 ${currency.amount}")
                         }
                 }
 
                 btnClearAmount.setOnClickListener {
-                    isUpdating = true
                     etAmount.setText("0.00")
-                    fixCursorPosition()
+                    etAmount.setSelection(etAmount.text.length - 3)
                     listener.onAmountChanged(currency, 0.0)
-                    isUpdating = false
-                }
-
-
-                etAmount.setOnClickListener { fixCursorPosition() }
-                etAmount.setOnFocusChangeListener { _, hasFocus ->
-                    if (hasFocus) fixCursorPosition()
                 }
 
             } else {
@@ -119,35 +103,33 @@ class CurrencyInputViewHolder(
         }
 
 
-    fun bindAmount(newAmount: Double) {
-        binding.tvAmount.text = String.format("%.2f", newAmount)
-        if (binding.etAmount.visibility == View.VISIBLE) {
-            isUpdating = true
-            binding.etAmount.setText(String.format("%.2f", newAmount))
-            fixCursorPosition()
-            isUpdating = false
-        }
-    }
-
-
-    private fun fixCursorPosition() {
-        val position = binding.etAmount.text.length - 3
-        if (position >= 0) {
-            binding.etAmount.setSelection(position)
-        }
-    }
+//    fun bindAmount(newAmount: Double) {
+//        binding.tvAmount.text = String.format("%.2f", newAmount)
+//        if (binding.etAmount.visibility == View.VISIBLE) {
+//            isUpdating = true
+//            binding.etAmount.setText(String.format("%.2f", newAmount))
+//            fixCursorPosition()
+//            isUpdating = false
+//        }
+//    }
+//
+//
+//    private fun fixCursorPosition() {
+//        val position = binding.etAmount.text.length - 3
+//        if (position >= 0) {
+//            binding.etAmount.setSelection(position)
+//        }
+//    }
 }
 
-
-
-
-
-
-fun EditText.textChanges(): Flow<String> = callbackFlow {
-    val watcher = this@textChanges.doOnTextChanged { text, _, _, _ ->
-        trySend(text.toString())
-    }
-    awaitClose { this@textChanges.removeTextChangedListener(watcher) }
+fun EditText.textChanges(): Flow<String> {
+    return callbackFlow {
+        val listener = doOnTextChanged { text, _, _, _ ->
+            trySend(text.toString())
+        }
+        awaitClose { removeTextChangedListener(listener) }
+    }.onStart { emit(text.toString()) }
 }
+
 
 

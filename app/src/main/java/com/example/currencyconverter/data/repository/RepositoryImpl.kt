@@ -59,39 +59,6 @@ class RepositoryImpl @Inject constructor(
 //            emptyList()
 //        }
 
-    override suspend fun getAvailableCurrencies(
-        baseCurrencyCode: String
-    ): List<CurrencyItem> = runCatching {
-
-        val rateDtos = ratesService.getRates(baseCurrencyCode, 1.0) // фиксируем amount = 1.0
-        val accounts = accountDao.getAll()
-
-        val currencyInfoList = currencyDao.getAll().takeIf { it.isNotEmpty() }
-            ?: currencyApiService.getCurrencyInfo()
-                .takeIf { it.isSuccessful }
-                ?.body()
-                ?.data
-                ?.map { (code, info) -> CurrencyDbo(code, info.fullName, info.symbol) }
-                ?.also { currencyDao.insertAll(it) }
-            ?: emptyList()
-
-        val currencyInfoMap = currencyInfoList.associateBy { it.code }
-
-        rateDtos.mapNotNull { dto ->
-            val account = accounts.find { it.code == dto.code }
-            val currencyInfo = currencyInfoMap[dto.code]
-            if (currencyInfo != null) {
-                currencyMapper.toCurrencyEntity(dto, account, currencyInfo)
-            } else {
-                null
-            }
-        }
-    }.getOrElse { e ->
-        Log.e(TAG, "Error while fetching data: ${e.message}", e)
-        emptyList()
-    }
-
-
 
     override suspend fun getRatesWithInfo(
         baseCurrencyCode: String,

@@ -29,9 +29,7 @@ class CurrencyItemDiffCallback : DiffUtil.ItemCallback<CurrencyUiModel>() {
                 CurrencyChangePayLoad.Balance(newItem.balance, newItem.symbol)
             }
 
-            oldItem.isSelected != newItem.isSelected -> {
-                CurrencyChangePayLoad.IsSelected(newItem.isSelected)
-            }
+
 
             else -> super.getChangePayload(oldItem, newItem)
         }

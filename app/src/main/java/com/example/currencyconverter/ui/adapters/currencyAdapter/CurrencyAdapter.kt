@@ -85,7 +85,6 @@ class CurrencyAdapter(
                         when (payload) {
                             is CurrencyChangePayLoad.RateValue -> holder.bindRateAmount(payload.newAmount, payload.symbol)
                             is CurrencyChangePayLoad.Balance -> holder.bindBalance(payload.newBalance, payload.symbol)
-                            is CurrencyChangePayLoad.IsSelected -> holder.bindIsSelected(payload.isSelected)
                             else -> holder.bind(item)
                         }
                     }
@@ -94,7 +93,7 @@ class CurrencyAdapter(
                 is CurrencyInputViewHolder -> {
                     for (payload in payloads) {
                         when (payload) {
-                            is CurrencyChangePayLoad.EnteredAmount -> holder.bindAmount(payload.enteredAmount)
+                            is CurrencyChangePayLoad.EnteredAmount -> {}
                             else -> holder.bind(item, item.isSelected)
                         }
                     }
