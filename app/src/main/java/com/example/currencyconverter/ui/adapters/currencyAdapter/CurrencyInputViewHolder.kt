@@ -64,23 +64,28 @@ class CurrencyInputViewHolder(
 
                 etAmount.setText(etAmount.text.toString() + ".00")
 
-                textWatcherJob = CoroutineScope(Dispatchers.Main).launch {
-                    etAmount.textChanges()
-                        .map { it.trim() }
-                        .filter { it.isNotEmpty() }
-                        .collect { text ->
-                            var value = text
-                            if (!value.endsWith(".00")) {
-                                value += ".00"
-                                etAmount.setText(value)
-                                etAmount.setSelection(value.length - 3)
-                            }
-                            val amount = value.removeSuffix(".00").toDoubleOrNull() ?: 0.0
-                            Log.d("CurrencyInputViewHolder", "$amount")
-                            listener.onAmountChanged(currency, amount)
-                            tvAmount.text = String.format("%.2f", currency.amount)
-                            Log.d("CurrencyInputViewHolder", "tv amount currency2 ${currency.amount}")
+                val amountFlow = etAmount.textChanges()
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .map { text ->
+                        var value = text.toString()
+                        if (!value.endsWith(".00")) {
+                            value += ".00"
+                            etAmount.setText(value)
+                            etAmount.setSelection(value.length - 3)
                         }
+                        value.removeSuffix(".00").toDoubleOrNull() ?: 0.0
+                    }
+                    .distinctUntilChanged()
+
+
+                textWatcherJob = CoroutineScope(Dispatchers.Main).launch {
+                    amountFlow.collect { amount ->
+                        Log.d("CurrencyInputViewHolder", "Amount: $amount")
+                        listener.onAmountChanged(currency, amount)
+                        tvAmount.text = String.format("%.2f", amount)
+                        Log.d("CurrencyInputViewHolder", "tv amount currency2 $amount")
+                    }
                 }
 
                 btnClearAmount.setOnClickListener {

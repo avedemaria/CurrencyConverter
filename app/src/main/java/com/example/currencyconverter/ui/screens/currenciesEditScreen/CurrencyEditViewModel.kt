@@ -62,6 +62,7 @@ class CurrencyEditViewModel @Inject constructor(
     }
 
 
+
     private suspend fun loadInitialData() {
         Log.d(TAG, "load initial data")
         val accounts = accountUseCase.getAccountsFromRoom().first()
@@ -117,6 +118,8 @@ class CurrencyEditViewModel @Inject constructor(
             _lastEnteredAmount.emit(newAmount)
         }
     }
+
+
 
 
 //    fun updateAmount(newAmount: Double) {
